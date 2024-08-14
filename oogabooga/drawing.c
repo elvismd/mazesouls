@@ -244,6 +244,58 @@ Draw_Quad *draw_image(Gfx_Image *image, Vector2 position, Vector2 size, Vector4 
 	
 	return q;
 }
+Draw_Quad *draw_image_source(Gfx_Image *image, Vector2 position, Vector4 source, Vector2 size, Vector4 color) {
+	Draw_Quad *q = draw_rect(position, size, color);
+	
+	Vector4 source_converted = source;
+
+	// First we invert the Y axis starting from the HEIGHT of the image (top-left corner) and subtract
+	// where you want to start minus the HEIGHT you want for the sprite (if you start at 0 it will give us the first frame)
+	source_converted.y = image->height - (source_converted.y + source_converted.w);
+
+	// Now the size axis (Z,W) of the image must be the location of them (X,Y) plus the intended size
+	// they want, i.e: 100, 145, 128, 128 will be transformed into 100, 145, 228 (100 + 128), 273 (145 + 128)
+	source_converted.z = source_converted.x + source_converted.z;	
+	source_converted.w = source_converted.y + source_converted.w;
+
+	// Then in the end we divide all by width/height of the image to normalize the values between 0 and 1
+	source_converted.x /= image->width;
+	source_converted.y /= image->height;
+	source_converted.z /= image->width;
+	source_converted.w /= image->height;
+
+	q->image = image;
+	q->uv = v4(source_converted.x, source_converted.y, source_converted.z, source_converted.w);
+	
+	return q;
+}
+
+Draw_Quad *draw_image_xform_source(Gfx_Image *image, Matrix4 xform, Vector4 source, Vector2 size, Vector4 color) {
+	Draw_Quad *q = draw_rect_xform(xform, size, color);
+	
+		Vector4 source_converted = source;
+
+	// First we invert the Y axis starting from the HEIGHT of the image (top-left corner) and subtract
+	// where you want to start minus the HEIGHT you want for the sprite (if you start at 0 it will give us the first frame)
+	source_converted.y = image->height - (source_converted.y + source_converted.w);
+
+	// Now the size axis (Z,W) of the image must be the location of them (X,Y) plus the intended size
+	// they want, i.e: 100, 145, 128, 128 will be transformed into 100, 145, 228 (100 + 128), 273 (145 + 128)
+	source_converted.z = source_converted.x + source_converted.z;	
+	source_converted.w = source_converted.y + source_converted.w;
+
+	// Then in the end we divide all by width/height of the image to normalize the values between 0 and 1
+	source_converted.x /= image->width;
+	source_converted.y /= image->height;
+	source_converted.z /= image->width;
+	source_converted.w /= image->height;
+
+	q->image = image;
+	q->uv = v4(source_converted.x, source_converted.y, source_converted.z, source_converted.w);
+	
+	return q;
+}
+
 Draw_Quad *draw_image_xform(Gfx_Image *image, Matrix4 xform, Vector2 size, Vector4 color) {
 	Draw_Quad *q = draw_rect_xform(xform, size, color);
 	
